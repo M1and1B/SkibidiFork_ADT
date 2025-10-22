@@ -435,3 +435,22 @@
     soundHit:
       collection: WeakHit
     forceSound: true
+
+- type: entity
+  id: ADTBaseEnergyBullet
+  name: base bullet rubber
+  parent: BaseBullet
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Sprite
+    sprite: Effects/lightning.rsi
+    layers:
+    - state: blue_lightning
+  - type: Projectile
+    damage:
+      types:
+        Shock: 15
+    soundHit:
+      path: /Audio/Weapons/Guns/Hits/snap.ogg
+  - type: StaminaDamageOnCollide
+    damage: 10

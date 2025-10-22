@@ -446,3 +446,40 @@
   - type: Tag
     tags:
     - ADTToyBlaster
+
+- type: entity
+  name: antique laser pistol
+  parent: [BaseWeaponBatterySmall]
+  id: ADTWeaponEnergy
+  description: This is an antique laser pistol. All craftsmanship is of the highest quality. It is decorated with a mahogany grip and chrome filigree. The object menaces with spikes of energy. On the item is an image of a captain and a clown. The clown is dead. The captain is striking a heroic pose.
+  components:
+  - type: Sprite
+    sprite: ADT/Objects/Weapons/Guns/Battery/energy.rsi
+    layers:
+    - state: base
+      map: ["enum.GunVisualLayers.Base"]
+    - state: mag-unshaded-3
+      map: ["enum.GunVisualLayers.MagUnshaded"]
+      shader: unshaded
+  - type: Clothing
+    sprite: ADT/Objects/Weapons/Guns/Battery/energy.rsi
+  - type: Gun
+    projectileSpeed: 5
+    soundGunshot:
+      path: /Audio/Weapons/Guns/Gunshots/laser_cannon.ogg
+  - type: ProjectileBatteryAmmoProvider
+    proto: ADTBaseEnergyBullet
+    fireCost: 10
+  - type: Battery
+    maxCharge: 30
+    startingCharge: 30
+  - type: BatterySelfRecharger
+    autoRecharge: true
+    autoRechargeRate: 2.5
+  - type: MagazineVisuals
+    magState: mag
+    steps: 3
+    zeroVisible: true
+  - type: Appearance
+  - type: StaticPrice
+    price: 750

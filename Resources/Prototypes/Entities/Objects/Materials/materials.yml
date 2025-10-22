@@ -833,6 +833,14 @@
   - type: Tag
     tags:
     - GoliathPlate
+  #ADT-Tweak-start
+  - type: Armor
+    modifiers:
+      coefficients:
+        Blunt: 0.8
+        Slash: 0.7
+        Piercing: 0.6
+  #ADT-Tweak-end
 
 - type: entity
   parent: MaterialGoliathHide

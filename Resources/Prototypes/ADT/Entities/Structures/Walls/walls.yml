@@ -60,6 +60,31 @@
 
 - type: entity
   parent: BaseWall
+  id: ADTCopperWall
+  name: shot
+  description: big
+  components:
+    - type: Sprite
+      sprite: ADT/Structures/Walls/copper.rsi
+    - type: Icon
+      sprite: ADT/Structures/Walls/copper.rsi
+    - type: IconSmooth
+      key: walls
+      base: state
+    - type: Tag
+      tags:
+        - Wall
+    - type: Destructible
+      thresholds:
+        - trigger:
+            !type:DamageTrigger
+            damage: 100
+          behaviors:
+            - !type:DoActsBehavior
+              acts: [ "Destruction" ]
+
+- type: entity
+  parent: BaseWall
   id: ADTCardboardWall
   name: cardboard Wall
   description: A wall of paper and thin boards. Enjoys a certain popularity in [eastern place].
