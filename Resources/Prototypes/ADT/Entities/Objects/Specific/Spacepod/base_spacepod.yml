@@ -1,0 +1,63 @@
+- type: entity
+  id: ADTBaseSpacePod
+  parent: BaseMech
+  name: clarke
+  description: Fast and light armored mech for space miners.
+  components:
+  - type: Sprite
+    drawdepth: Mobs
+    noRot: true
+    sprite: Objects/Specific/Mech/mecha.rsi
+    layers:
+    - map: [ "enum.MechVisualLayers.Base" ]
+      state: clarke
+  # - type: FootstepModifier Заменить на прикольни звуки???
+  #   footstepSoundCollection:
+  #     path: /Audio/ADT/Mecha/sound_mecha_powerloader_step.ogg
+  - type: Mech
+    modifiers:
+      coefficients:
+        Blunt: 0.5
+        Slash: 0.5
+        Piercing: 0.75
+        Heat: 0.75
+        Radiation: 0
+        Caustic: 0.1
+        Structural: 1.0
+    maxintegrity: 340
+    baseState: clarke
+    openState: clarke-open
+    brokenState: clarke-broken
+    mechToPilotDamageMultiplier: 0.25
+    pilotWhitelist:
+      components:
+        - HumanoidAppearance
+    equipmentWhitelist:
+      tags:
+      - ADTMechEquipmentGeneral
+      - ADTMechEquipmentIndustrial
+  - type: CanMoveInAir
+  - type: MechAir
+  - type: SpacePod
+  - type: MovementSpeedModifier
+    baseWalkSpeed: 2.0
+    baseSprintSpeed: 3.6
+  - type: ExplosionResistance
+    damageCoefficient: 0.4
+  - type: Storage
+    grid:
+    - 0,0,9,4
+    clickInsert: false
+  - type: Destructible
+    thresholds:
+    - trigger:
+        !type:DamageTrigger
+        damage: 500
+      behaviors:
+      - !type:PlaySoundBehavior
+        sound:
+          collection: MetalBreak
+      - !type:ChangeConstructionNodeBehavior
+        node: start
+      - !type:DoActsBehavior
+        acts: ["Destruction"]
