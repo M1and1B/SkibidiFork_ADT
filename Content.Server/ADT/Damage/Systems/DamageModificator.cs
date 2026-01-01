@@ -1,29 +1,27 @@
-using Content.Shared.Damage;
-using Content.Shared.Weapons.Melee.Events;
-using Robust.Shared.Network;
-using Robust.Shared.Physics.Events;
-using Robust.Shared.Timing;
-Content.Shared.Weapons.Marker;
+// using Content.Shared.Damage;
+// using Content.Shared.Weapons.Melee.Events;
+// using Robust.Shared.Network;
+// using Robust.Shared.Physics.Events;
+// using Robust.Shared.Timing;
+// using Content.Shared.ADT.Damage.Components;
 
-namespace Content.Shared.ADT.Damage.Systems;
+// namespace Content.Shared.ADT.Damage.Systems;
 
-public abstract class DamageModificatorSystem : EntitySystem
-{
-    [Dependency] private readonly DamageableSystem _damageable = default!;
+// public abstract class DamageModificatorSystem : EntitySystem
+// {
+//     [Dependency] private readonly DamageableSystem _damageable = default!;
 
-    public override void Initialize()
-    {
-        base.Initialize();
+//     public override void Initialize()
+//     {
+//         base.Initialize();
 
-        SubscribeLocalEvent<DamageMarkerComponent, AttackedEvent>(OnAttack);
-    }
+//         SubscribeLocalEvent<DamageModificatorComponent, AttackedEvent>(OnAttack);
+//     }
 
-    private void OnAttack(EntityUid uid, DamageModificatorComponent comp, AttackedEvent args)
-    {
-        args.BonusDamage += component.Damage;
-        if (TryComp<LeechOnMarkerComponent>(args.Used, out var leech))
-        {
-            _damageable.TryChangeDamage(args.User, leech.Leech, true, false, origin: args.Used);
-        }
-    }
-}
+//     private void OnAttack(EntityUid uid, DamageModificatorComponent comp, AttackedEvent args)
+//     {
+//         args.BonusDamage += comp.Damage;
+
+//         _damageable.TryChangeDamage(args.User, leech.Leech, true, false, origin: args.Used);
+//     }
+// }

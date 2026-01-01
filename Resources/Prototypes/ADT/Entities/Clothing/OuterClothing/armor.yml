@@ -221,13 +221,6 @@
     tags:
     - ADTMinerArmor
   - type: ArmorPlate
-    containerId: "armor-plates"
-    maxSlots: 2
-    whitelist:
-      components:
-      - Armor
-      tags:
-      - GoliathPlate
     
 - type: entity
   parent: ADTClothingOuterArmorMiner

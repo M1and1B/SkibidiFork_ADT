@@ -9,7 +9,7 @@ namespace Content.Shared.ADT.Armor;
 public sealed partial class ArmorPlateComponent : Component
 {
     [DataField, AutoNetworkedField]
-    public string ContainerId = "armor-plates";
+    public string ContainerId = "plates";
 
     [DataField("maxSlots"), AutoNetworkedField]
     public int MaxSlots = 2;
@@ -18,7 +18,7 @@ public sealed partial class ArmorPlateComponent : Component
     public EntityWhitelist? Whitelist;
 
     [ViewVariables]
-    public Container? Container;
+    public ContainerSlot? Container;
 
     [DataField, AutoNetworkedField]
     public DamageModifierSet CombinedModifiers = new();

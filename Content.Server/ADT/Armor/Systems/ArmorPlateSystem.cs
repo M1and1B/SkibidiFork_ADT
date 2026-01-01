@@ -1,94 +1,91 @@
-// using Content.Shared.Armor;
-// using Content.Shared.Damage;
-// using Content.Shared.ADT.Armor;
-// using Robust.Shared.Prototypes;
-// using Robust.Shared.GameObjects;
-// using Content.Shared.Whitelist;
+using Content.Shared.Whitelist;
+using Content.Shared.Containers.ItemSlots;
+using Robust.Shared.Containers;
+using Content.Shared.Armor;
+using Content.Shared.Damage;
+using Content.Shared.ADT.Armor;
+using Robust.Shared.GameObjects;
 
-// namespace Content.Server.Armor;
+namespace Content.Server.ADT.Armor;
 
-// public sealed class ArmorPlateSystem : EntitySystem
-// {
-//     [Dependency] private readonly SharedContainerSystem _containers = default!;
-//     [Dependency] private readonly ArmorSystem _armorSystem = default!; // Ссылка на систему брони
-//     [Dependency] private readonly EntityWhitelistSystem _whitelist = default!;
+public sealed class ArmorPlateSystem : EntitySystem
+{
+    [Dependency] private readonly SharedContainerSystem _containers = default!;
+    [Dependency] private readonly ItemSlotsSystem _itemSlots = default!;
 
-//     public override void Initialize()
-//     {
-//         base.Initialize();
-//         SubscribeLocalEvent<ArmorPlateComponent, ComponentStartup>(OnStartup);
-//         SubscribeLocalEvent<ArmorPlateComponent, EntInsertedIntoContainerMessage>(OnInsertedOrRemoved);
-//         SubscribeLocalEvent<ArmorPlateComponent, EntRemovedFromContainerMessage>(OnInsertedOrRemoved);
-//         SubscribeLocalEvent<ArmorPlateComponent, ContainerIsInsertingAttemptEvent>(OnInsertAttempt);
-//         SubscribeLocalEvent<ArmorPlateComponent, DamageModifyEvent>(OnDamageModify);
-//     }
+    public override void Initialize()
+    {
+        base.Initialize();
+        SubscribeLocalEvent<ArmorPlateComponent, ComponentStartup>(OnStartup);
+        SubscribeLocalEvent<ArmorPlateComponent, DamageModifyEvent>(OnDamageModify);
+        SubscribeLocalEvent<ArmorPlateComponent, EntInsertedIntoContainerMessage>(OnContainerModified);
+        SubscribeLocalEvent<ArmorPlateComponent, EntRemovedFromContainerMessage>(OnContainerModified);
+    }
 
-//     private void OnStartup(EntityUid uid, ArmorPlateComponent comp, ComponentStartup args)
-//     {
-//         comp.Container = _containers.EnsureContainer<Container>(uid, comp.ContainerId);
-//         UpdateArmor(uid, comp);
-//     }
+    private void OnStartup(EntityUid uid, ArmorPlateComponent comp, ComponentStartup args)
+    {
+        // Создаём ContainerSlot
+        comp.Container = _containers.EnsureContainer<ContainerSlot>(uid, "plates");
 
-//     private void OnInsertAttempt(EntityUid uid, ArmorPlateComponent comp, ContainerIsInsertingAttemptEvent args)
-//     {
-//         if (args.Container.ID != comp.ContainerId)
-//             return;
+        // Создаём ItemSlotsComponent, если нет
+        var slots = EnsureComp<ItemSlotsComponent>(uid);
 
-//         // Проверка whitelist через систему
-//         if (comp.Whitelist is not null && !_whitelist.IsValid(comp.Whitelist, args.EntityUid))
-//         {
-//             args.Cancel();
-//             return;
-//         }
+        if (!slots.Slots.ContainsKey("plates"))
+        {
+            var plateSlot = new ItemSlot
+            {
+                Name = "plates",
+                Whitelist = new EntityWhitelist
+                {
+                    Components = new[] { "Armor" } // массив
+                },
+                InsertOnInteract = true,
+                EjectOnInteract = true,
+                Swap = true
+            };
 
-//         if (comp.Container?.ContainedEntities.Count >= comp.MaxSlots)
-//         {
-//             args.Cancel();
-//             return;
-//         }
-//     }
+            _itemSlots.AddItemSlot(uid, "plates", plateSlot);
+        }
 
-//     private void OnInsertedOrRemoved(EntityUid uid, ArmorPlateComponent comp, ContainerModifiedMessage args)
-//     {
-//         if (args.Container.ID != comp.ContainerId)
-//             return;
+        UpdateArmor(uid, comp);
+    }
 
-//         UpdateArmor(uid, comp);
-//     }
+    private void OnContainerModified(EntityUid uid, ArmorPlateComponent comp, ContainerModifiedMessage args)
+    {
+        if (args.Container.ID != "plates")
+            return;
 
-//     private void UpdateArmor(EntityUid uid, ArmorPlateComponent comp)
-//     {
-//         if (!TryComp(uid, out ArmorComponent? armor))
-//             return;
+        UpdateArmor(uid, comp);
+    }
 
-//         var combined = new DamageModifierSet
-//         {
-//             Coefficients = new Dictionary<string, float>(armor.Modifiers.Coefficients),
-//             FlatReduction = new Dictionary<string, float>(armor.Modifiers.FlatReduction)
-//         };
+    private void UpdateArmor(EntityUid uid, ArmorPlateComponent comp)
+    {
+        if (!TryComp(uid, out ArmorComponent? armor))
+            return;
 
-//         if (comp.Container != null)
-//         {
-//             foreach (var plate in comp.Container.ContainedEntities)
-//             {
-//                 if (!TryComp(plate, out ArmorComponent? plateArmor))
-//                     continue;
+        var combined = new DamageModifierSet
+        {
+            Coefficients = new Dictionary<string, float>(armor.Modifiers.Coefficients),
+            FlatReduction = new Dictionary<string, float>(armor.Modifiers.FlatReduction)
+        };
 
-//                 foreach (var (type, value) in plateArmor.Modifiers.Coefficients)
-//                     combined.Coefficients[type] = combined.Coefficients.TryGetValue(type, out var existing) ? existing * value : value;
+        // Проверяем наличие предмета в ContainerSlot
+        if (comp.Container?.ContainedEntity is { } plate &&
+            TryComp(plate, out ArmorComponent? plateArmor))
+        {
+            foreach (var (type, value) in plateArmor.Modifiers.Coefficients)
+                combined.Coefficients[type] = combined.Coefficients.TryGetValue(type, out var existing) ? existing * value : value;
 
-//                 foreach (var (type, value) in plateArmor.Modifiers.FlatReduction)
-//                     combined.FlatReduction[type] = combined.FlatReduction.TryGetValue(type, out var existing) ? existing + value : value;
-//             }
-//         }
+            foreach (var (type, value) in plateArmor.Modifiers.FlatReduction)
+                combined.FlatReduction[type] = combined.FlatReduction.TryGetValue(type, out var existing) ? existing + value : value;
+        }
 
-//         comp.CombinedModifiers = combined;
-//         Dirty(uid, comp);
-//     }
+        comp.CombinedModifiers = combined;
+        Dirty(uid, comp);
+    }
 
-//     private void OnDamageModify(EntityUid uid, ArmorPlateComponent comp, DamageModifyEvent args)
-//     {
-//         // Применяем модификаторы через ArmorSystem
-//         args.Damage = _armorSystem.ApplyModifierSet(args.Damage, comp.CombinedModifiers);
-//     }
-// }
+    private void OnDamageModify(EntityUid uid, ArmorPlateComponent comp, DamageModifyEvent args)
+    {
+        args.Damage = DamageSpecifier.ApplyModifierSet(args.Damage, comp.CombinedModifiers);
+    }
+}
